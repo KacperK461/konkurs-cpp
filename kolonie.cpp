@@ -1,35 +1,23 @@
 ﻿#include <iostream>
 #include <vector>
 #include <deque>
+#include <string>
 
 using namespace std;
 
-struct Bacteria
+int bfs(int n, int start, int** bacteries, vector<vector<int>> &adj, void (*func)(int&, int*))
 {
-	int iq;
-	int weight;
-};
+	int output = start;
+	int s;
+	cin >> s;
+	s--;
 
-
-void join (vector<vector<int>> colonies)
-{
-	int first, second;
-	cin >> first >> second;
-	first--;
-	second--;
-
-	colonies[first].push_back(second);
-}
-
-
-
-void bfs(int s, int n, vector<vector<int>> adj)
-{
 	bool* visited = new bool[n];
-	for (int i = 0; i < n; i++)	
+	for (int i = 0; i < n; i++)
 		visited[i] = false;
 
 	deque<int> queue;
+
 
 	visited[s] = true;
 	queue.push_back(s);
@@ -40,9 +28,7 @@ void bfs(int s, int n, vector<vector<int>> adj)
 	{
 		s = queue.front();
 
-
-		
-
+		func(output, bacteries[s]);
 
 		queue.pop_front();
 
@@ -55,172 +41,37 @@ void bfs(int s, int n, vector<vector<int>> adj)
 			}
 		}
 	}
+
+	return output;
 }
 
-
-
-void iqMax(Bacteria* bacteries, vector<vector<int>> &colonies, int n)
+void iqMax(int &max, int* bacteria)
 {
-	int s;
-	cin >> s;
-	s--;
-
-	int max = -101;
-
-	bool* visited = new bool[n];
-	for (int i = 0; i < n; i++)
-		visited[i] = false;
-
-	deque<int> queue;
-
-	visited[s] = true;
-	queue.push_back(s);
-
-	vector<int>::iterator i;
-
-	while (!queue.empty())
-	{
-		s = queue.front();
-
-
-		if (bacteries[s].iq > max)
-			max = bacteries[s].iq;
-
-		queue.pop_front();
-
-		for (i = colonies[s].begin(); i != colonies[s].end(); ++i)
-		{
-			if (!visited[*i])
-			{
-				visited[*i] = true;
-				queue.push_back(*i);
-			}
-		}
-	}
-
-	cout << max;
+	if (bacteria[1] > max)
+		max = bacteria[1];
 }
 
-void iqMin(Bacteria* bacteries, vector<vector<int>> &colonies, int n)
+void iqMin(int &min, int* bacteria)
 {
-	int s;
-	cin >> s;
-	s--;
-
-	int min = 101;
-
-	bool* visited = new bool[n];
-	for (int i = 0; i < n; i++)
-		visited[i] = false;
-
-	deque<int> queue;
-
-	visited[s] = true;
-	queue.push_back(s);
-
-	vector<int>::iterator i;
-
-	while (!queue.empty())
-	{
-		s = queue.front();
-
-
-		if (bacteries[s].iq < min)
-			min = bacteries[s].iq;
-
-		queue.pop_front();
-
-		for (i = colonies[s].begin(); i != colonies[s].end(); ++i)
-		{
-			if (!visited[*i])
-			{
-				visited[*i] = true;
-				queue.push_back(*i);
-			}
-		}
-	}
-
-	cout << min;
+	if (bacteria[1] < min)
+		min = bacteria[1];
 }
 
-void showWeight(Bacteria* bacteries, vector<vector<int>> &colonies, int n)
+void calcWeight(int &weight, int* bacteria)
 {
-	int s;
-	cin >> s;
-	s--;
-
-	int weight = 0;
-
-	bool* visited = new bool[n];
-	for (int i = 0; i < n; i++)
-		visited[i] = false;
-
-	deque<int> queue;
-
-	visited[s] = true;
-	queue.push_back(s);
-
-	vector<int>::iterator i;
-
-	while (!queue.empty())
-	{
-		s = queue.front();
-
-		weight += bacteries[s].weight;
-
-		queue.pop_front();
-
-		for (i = colonies[s].begin(); i != colonies[s].end(); ++i)
-		{
-			if (!visited[*i])
-			{
-				visited[*i] = true;
-				queue.push_back(*i);
-			}
-		}
-	}
-
-	cout << weight;
+	weight += bacteria[0];
 }
 
-
-
-void cos(vector<vector<int>> colonies, int n)
+void join(vector<vector<int>> &colonies)
 {
-	int s = 1;
+	int first, second;
+	cin >> first >> second;
+	first--;
+	second--;
 
-	bool* visited = new bool[n];
-	for (int i = 0; i < n; i++)
-		visited[i] = false;
-
-	deque<int> queue;
-
-	visited[s] = true;
-	queue.push_back(s);
-
-	vector<int>::iterator i;
-
-	while (!queue.empty())
-	{
-		s = queue.front();
-
-
-		cout << s;
-
-		queue.pop_front();
-
-		for (i = colonies[s].begin(); i != colonies[s].end(); ++i)
-		{
-			if (!visited[*i])
-			{
-				visited[*i] = true;
-				queue.push_back(*i);
-			}
-		}
-	}
+	colonies[first].push_back(second);
+	colonies[second].push_back(first);
 }
-
-
 
 int main()
 {
@@ -233,17 +84,18 @@ int main()
 	int weight;
 	cin >> n;
 
-	Bacteria* bacteries = new Bacteria[n];
+	int** bacteries = new int*[n];
 
 	for (int i = 0; i < n; i++)
 	{
+		bacteries[i] = new int[2];
 		cin >> weight >> iq;
-		bacteries[i].iq = iq;
-		bacteries[i].weight = weight;
+
+	    bacteries[i][0] = weight;
+		bacteries[i][1] = iq;
 	}
 
 	vector<vector<int>> colonies(n);
-	//cout << colonies.size();
 
 	string command;
 	while (cin >> command)
@@ -251,101 +103,12 @@ int main()
 		if (command == "JOIN")
 			join(colonies);
 		if (command == "IQ_MAX")
-			iqMax(bacteries, colonies, n);
+			cout << bfs(n, -101, bacteries, colonies, iqMax) << endl;
 		if (command == "IQ_MIN")
-			iqMin(bacteries, colonies, n);
+			cout << bfs(n, 101, bacteries, colonies, iqMin) << endl;
 		if (command == "MASA")
-			showWeight(bacteries, colonies, n);
+			cout << bfs(n, 0, bacteries, colonies, calcWeight) << endl;
 	}
 
-	cout << endl << endl;
-	for (auto vec : colonies)
-	{
-		for (auto i : vec)
-			cout << i;
-	}
 	return 0;
 }
-
-//class Data
-//{
-//public:
-//	int maxIq;
-//	int minIq;
-//	int sumWeight;
-//
-//	Data()
-//	{
-//		maxIq = -101;
-//		minIq = 101;
-//		sumWeight = 0;
-//	}
-//
-//	void add(Bacteria& bac)
-//	{
-//		if (bac.iq > maxIq)
-//			maxIq = bac.iq;
-//		if (bac.iq < minIq)
-//			minIq = bac.iq;
-//		sumWeight += bac.weight;
-//		bac.data = this;
-//	}
-//};
-
-
-//void join(Bacteria* bacteries)
-//{
-//	int first, second;
-//	cin >> first >> second;
-//	first--;
-//	second--;
-//
-//	if (bacteries[first].data == nullptr && bacteries[second].data == nullptr)
-//	{
-//		bacteries[first].data = new Data();
-//		bacteries[first].data->add(bacteries[first]);
-//		bacteries[first].data->add(bacteries[second]);
-//	}
-//	else if (bacteries[first].data != nullptr)
-//		bacteries[first].data->add(bacteries[second]);
-//	else if (bacteries[second].data != nullptr)
-//		bacteries[second].data->add(bacteries[first]);
-//}
-
-//void iqMax(Bacteria* bacteries)
-//{
-//	int index;
-//	cin >> index;
-//	index--;
-//
-//	if (bacteries[index].data == nullptr)
-//		cout << bacteries[index].iq << "\n";
-//	else
-//		cout << bacteries[index].data->maxIq;
-//}
-//
-//void iqMin(Bacteria* bacteries)
-//{
-//	int index;
-//	cin >> index;
-//	index--;
-//
-//	if (bacteries[index].data == nullptr)
-//		cout << bacteries[index].iq << "\n";
-//	else
-//		cout << bacteries[index].data->minIq;
-//}
-//
-//void showWeight(Bacteria* bacteries)
-//{
-//	int index;
-//	cin >> index;
-//	index--;
-//
-//	if (bacteries[index].data == nullptr)
-//		cout << bacteries[index].weight << "\n";
-//	else
-//		cout << bacteries[index].data->sumWeight;
-//}
-
-
